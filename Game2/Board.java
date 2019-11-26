@@ -52,6 +52,8 @@ public class Board {
         }
 
         public void execute (){
+
+        int temp;
             for (int i = 1; i < boardLayout.length-1; i++) {
                 for (int j = 1; j <boardLayout.length-1; j++) {
                     runRules(boardLayout[i][j],i,j,getNeighboursInformation(boardLayout[i][j],i,j));
