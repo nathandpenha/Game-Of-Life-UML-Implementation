@@ -1,220 +1,139 @@
-import java.awt.*;
+package Game2;
+
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
 public class Board {
+    // Create array of type cells
+    Cell boardLayout[][]=new Cell[10][10];
 
-    private JPanel ui = null;
-    public Cell chk[][]= new Cell[10][10];
-    Board() {
-        evolve();
-    }
 
-    public void evolve() {
-        if (ui!=null) return;
+    //create temporary array to hold data for next generation of output cells
+    Cell nextGen[][]=new Cell[10][10];
+    public Board() {
 
-        ui = new JPanel(new GridLayout(10,10,20,20));
-        ui.setBorder(new EmptyBorder(4,4,4,4));
-        for(int i=0; i<10; i++) {
-            for (int j=0; j<10; j++) {
-        chk[i][j]=new Cell();
-            }
-        }
-        for(int i=0; i<10; i++) {
-            for (int j=0; j<10; j++) {
-                chk[i][j].setAlive();
-            }
-        }
-        for(int i=0; i<10; i++) {
-            for (int j=0; j<10; j++) {
+        for (int i = 0; i < boardLayout.length; i++) {
+            for (int j = 0; j < boardLayout.length; j++) {
+                //setting all cell states to dead
+                boardLayout[i][j] = new Cell(0);
+                boardLayout[i][j].setState(0);
+                nextGen[i][j] = new Cell(0);
 
-                ui.add(chk[i][j]);
-            }
-        }
+    //Setting initials cells alive
+                if(i>2 && i<4 && j>2 && j<6){
+//                    //i>2&&i<5&&j>2&&j<5 ignorei>2&&i<6&&j>2&&j<6 i>2&&i<4&&j>2 && j<4
+//                    //setting some cells to alive
+                    boardLayout[i][j].setState(1);
+                }
 
-    }
-
-    public void execute(){
-        for(int i=1; i<9; i++) {
-            for (int j=1; j<9; j++){
-                shouldIDie(chk,i,j);
-                comeAlive(chk,i,j);
-
-            }}
-        draw();
-        run();
-       // execute();
-        }
-    public void run() {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                System.out.println(e);
-            }
-            //System.out.println(i);
-
-    }
-        public void draw(){
-        ui.revalidate();
-        ui.repaint();
-
-        ui.removeAll();
-        ui.invalidate();
-        ui.repaint();
-        ui.setBorder(new EmptyBorder(4,4,4,4));
-
-        ui.revalidate();
-        ui.repaint();
-        ui.requestFocus();
-        for(int ii=0; ii<10; ii++) {
-            for (int jj=0; jj<10; jj++) {
-                chk[ii][jj]=new Cell();
-                ui.add(chk[ii][jj]);
             }
         }
     }
+    // this function returns how many neighbours of the current cell is alive
+        public int getNeighboursInformation(Cell cell, int x, int y) {
+
+            int aliveNeighbours = 0;
+            for (int i = -1; i <= 1; i++){
+                for (int j = -1; j <= 1; j++) {
+
+                    //aliveNeighbours = aliveNeighbours + boardLayout[getMod(i + x,10)][getMod(y + j,10)].getState();
+                    aliveNeighbours = aliveNeighbours + boardLayout[(i + x)][(y + j)].getState();
+                }
+        }
+
+                aliveNeighbours =aliveNeighbours - boardLayout[x][y].getState();
+            System.out.print(aliveNeighbours);
+            return aliveNeighbours;
+        }
 
 
-    public void shouldIDie(Cell cell[][], int i, int j){
+    //This function executes rules for each cell
+    //create rule type object
+        public void runRules(Cell cell, int x, int y, int aliveNeighbours){
+
         Rule rule=new Rule();
-        if(rule.die( cell,i,j)){
-            cell[i][j].die();
+
+         if(rule.birthRule(cell.getState(),aliveNeighbours)){
+        //if birth rule is true then give life to cell
+                nextGen[x][y].birth();
+            }
+
+       else if (rule.lonelyDeathRule(cell.getState(),aliveNeighbours)) {
+           //if lonely cell is true then kill cell
+           nextGen[x][y].die();
+        }
+        else if(rule.overPopulationRule(cell.getState(),aliveNeighbours)){
+            //if cell is over populated then kill cell
+            nextGen[x][y].die();
         }
 
-    }
-    public void comeAlive(Cell cell[][], int i, int j){
-        Rule rule=new Rule();
-        if(rule.birth( cell,i,j)){
-            cell[i][j].setAlive();
+        else if(rule.survive(cell.getState(),aliveNeighbours))
+            {
+                //if 2 or 3 neighbours are alive then let it be alive
+            nextGen[x][y].setState(1);
         }
 
-    }
+        }
+        //function to do one iteration for all cells
+        public Cell[][] execute (){
+            for (int i = 1; i < boardLayout.length-1; i++) {
+                System.out.println();
+                for (int j = 1; j <boardLayout.length-1; j++) {
+                    // run rules for all cells excepting border
+                    runRules(boardLayout[i][j],i,j,getNeighboursInformation(boardLayout[i][j],i,j));
 
-public   JPanel getUI(){
-        return ui;
-}
+                }
+            }
+
+            System.out.println();  System.out.println();  System.out.println();
+            //set new boardlayout and forget old layout
+            //boardLayout=nextGen;
+            for (int i = 1; i < boardLayout.length-1; i++) {
+                for (int j = 1; j <boardLayout.length-1; j++) {
+                    // run rules for all cells excepting border
+                    boardLayout[i][j].setState(nextGen[i][j].getState());
+                }
+            }
 
 
-    public static void main(String[] args) {
-        JFrame f = new JFrame();
-        f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        f.setLocationByPlatform(true);
-        f.pack();
-        //f.setMinimumSize(f.getSize());
-        f.setPreferredSize(new Dimension(400, 300));
 
-        f.setVisible(true);
-        Board b=new Board();
-        f.add(b.getUI());
+                return boardLayout;
+        }
+        //Display the initial state of the board
+        public int[][] firstStates(){
+        int temp[][]=new int[10][10];
+            for (int i = 0; i < boardLayout.length; i++) {
+                for (int j = 0; j < boardLayout.length; j++) {
+                    if(boardLayout[i][j].getState()==1)
+                    {
+                        temp[i][j]=1;
 
-        for(int i=0;i<100;i++) {
-            b.execute();
+                    }
+                    else{temp[i][j]=0;}
+
+                }
+                //System.out.println();
+            }
+
+            return temp;
+        }
+//If we need to implement circular rules, we need to use this function
+//        public int getMod(int value, int modOf) {
+//            if (value < 0) {
+//
+//                return value + modOf;
+//            } else {
+//                return value%modOf;
+//            }
+//        }
+
+
+
+
+
+
+
         }
 
-    }
-
-}
-
-class Cell extends JCheckBox{
-
-    public boolean alive;
-
-    public void die(){
-        this.setSelected(false);
-        alive=false;
-
-    }
-    public void setAlive(){
-        this.setSelected(true);
-        alive=true;
-
-    }
 
 
-    public boolean getCurrentState(){
-        return this.isSelected();
-
-    }
-    //public void getNeighborInformation(){}
-
-    public void setState(boolean state){
-        this.setSelected(state);
-        alive=state;
-    }
-
-}
-
-
-class Rule{
-    public boolean birth(Cell chk[][],int row, int column) {
-        int flag = 0;
-
-        if (chk[row][column + 1].isSelected()) {
-            flag++;
-        }
-        if (chk[row][column - 1].isSelected()) {
-            flag++;
-        }
-        if (chk[row + 1][column].isSelected()) {
-            flag++;
-        }
-        if (chk[row - 1][column].isSelected()) {
-            flag++;
-        }
-        if (flag > 2) {
-            System.out.println(row+" "+column+" comes alive");
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean die(Cell chk[][],int row, int column){
-        int flag=0;
-
-        if(chk[row][(column+1)%10].isSelected()){
-            flag++;
-        }
-        if(chk[row][((column-1)%10)].isSelected()){
-            flag++;
-        }
-        if(chk[(row+1)%10][column].isSelected()){
-            flag++;
-        }
-        if(chk[(row-1)%10][column].isSelected()){
-            flag++;
-        }
-        if(flag<2 || flag>3){
-            System.out.println(row+" "+column+" dies");
-            return true;
-        }else {
-            return false;
-        }
-    }
-    public boolean survive(Cell chk[][],int row, int column){
-        int flag=0;
-
-        if(chk[row][column+1].isSelected()){
-            flag++;
-        }
-        if(chk[row][column-1].isSelected()){
-            flag++;
-        }
-        if(chk[row+1][column].isSelected()){
-            flag++;
-        }
-        if(chk[row-1][column].isSelected()){
-            flag++;
-        }
-        if(flag<2){
-
-
-            return true;
-        }else {
-            return false;
-        }
-    }
-
-
-
-}
