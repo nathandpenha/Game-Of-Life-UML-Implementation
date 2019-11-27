@@ -1,4 +1,5 @@
 package Game2;
+import java.util.Random;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,6 +11,9 @@ public class Board {
 
     //create temporary array to hold data for next generation of output cells
     Cell nextGen[][]=new Cell[10][10];
+
+
+
     public Board() {
 
         for (int i = 0; i < boardLayout.length; i++) {
@@ -19,9 +23,12 @@ public class Board {
                 boardLayout[i][j].setState(0);
                 nextGen[i][j] = new Cell(0);
 
+//                Random rand = new Random();
+//                boardLayout[i][j].setState(rand.nextInt(2));
+
     //Setting initials cells alive
-                if(i>2 && i<4 && j>2 && j<6){
-//                    //i>2&&i<5&&j>2&&j<5 ignorei>2&&i<6&&j>2&&j<6 i>2&&i<4&&j>2 && j<4
+                if(i>2&&i<6&&j>2&&j<6){
+//                    //i>2&&i<5&&j>2&&j<5 ignorei>2&&i<6&&j>2&&j<6 i>2&&i<4&&j>2 && j<4  i>2 && i<4 && j>2 && j<6
 //                    //setting some cells to alive
                     boardLayout[i][j].setState(1);
                 }
@@ -29,6 +36,39 @@ public class Board {
             }
         }
     }
+
+    public Board(int userSetArray[][]) {
+
+        for (int i = 0; i < userSetArray.length; i++) {
+
+
+//            System.out.print(userSetArray[i][0]+"  ");
+//            System.out.println(userSetArray[i][1]);
+            }
+
+
+                for (int i = 0; i < boardLayout.length; i++) {
+
+
+            for (int j = 0; j < boardLayout.length; j++) {
+                //setting all cell states to dead
+                boardLayout[i][j] = new Cell(0);
+                nextGen[i][j] = new Cell(0);
+
+                for(int k=0;k<userSetArray.length;k++){
+
+                        if(i==userSetArray[k][0]&&j==userSetArray[k][1]){
+                            boardLayout[i][j].setState(1);
+                        }
+
+                }
+
+
+                }
+
+            }
+        }
+
     // this function returns how many neighbours of the current cell is alive
         public int getNeighboursInformation(Cell cell, int x, int y) {
 
